@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心情日记</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🌸 今日心情日记</h1>
+    <div id="step1" class="step">
+      <h2>今天的心情是？</h2>
+      <div class="mood-options">
+        <button onclick="selectMood('开心 😊')">😊 开心</button>
+        <button onclick="selectMood('平静 😌')">😌 平静</button>
+        <button onclick="selectMood('难过 😢')">😢 难过</button>
+        <button onclick="selectMood('焦虑 😰')">😰 焦虑</button>
+        <button onclick="selectMood('生气 😡')">😡 生气</button>
+      </div>
+    </div>
+
+    <div id="step2" class="step hidden">
+      <h2>为什么会这样呢？</h2>
+      <textarea id="reason" placeholder="简单写一下原因吧..."></textarea>
+      <button onclick="nextStep()">下一步 ➜</button>
+    </div>
+
+    <div id="step3" class="step hidden">
+      <h2>今天的收获有哪些？</h2>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="读书 📚"> 读书</label>
+        <label><input type="checkbox" value="运动 🏃‍♀️"> 运动</label>
+        <label><input type="checkbox" value="社交 💬"> 社交</label>
+        <label><input type="checkbox" value="听书 🎧"> 听书</label>
+        <label><input type="checkbox" value="反思 🪞"> 反思</label>
+      </div>
+      <button onclick="generateDiary()">生成日记 💖</button>
+    </div>
+
+    <div id="result" class="step hidden">
+      <h2>你的今日日记 ✨</h2>
+      <p id="diaryText"></p>
+      <button onclick="restart()">再写一篇 🌷</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
