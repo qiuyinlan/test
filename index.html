@@ -14,6 +14,7 @@
                         primary: '#ff6b8b',
                         secondary: '#ffeef2',
                         accent: '#ffccd5',
+                        comfort: '#a8d1ff'
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -33,6 +34,9 @@
             .diary-card {
                 box-shadow: 0 10px 25px -5px rgba(255, 107, 139, 0.1), 0 8px 10px -6px rgba(255, 107, 139, 0.1);
             }
+            .comfort-card {
+                box-shadow: 0 10px 25px -5px rgba(168, 209, 255, 0.2), 0 8px 10px -6px rgba(168, 209, 255, 0.2);
+            }
         }
     </style>
 </head>
@@ -40,147 +44,296 @@
     <div class="max-w-md w-full bg-white rounded-2xl p-6 shadow-lg">
         <h1 class="text-2xl font-bold text-center text-primary mb-6">今日心情日记 ✨</h1>
         
-        <!-- 步骤1：选择心情 -->
-        <div id="step1" class="step step-transition">
-            <h2 class="text-xl font-semibold mb-4 text-center">今天感觉怎么样？</h2>
-            <div class="grid grid-cols-3 gap-3">
-                <button onclick="selectMood('开心 😊')" class="p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">开心</button>
-                <button onclick="selectMood('平静 😌')" class="p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">平静</button>
-                <button onclick="selectMood('疲惫 😴')" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">疲惫</button>
-                <button onclick="selectMood('难过 😢')" class="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">难过</button>
-                <button onclick="selectMood('生气 😠')" class="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">生气</button>
-                <button onclick="showCustomMoodInput()" class="p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">其他</button>
-            </div>
-            
-            <!-- 自定义心情输入框 -->
-            <div id="customMoodInput" class="hidden mt-4 p-4 bg-secondary rounded-xl">
-                <h3 class="font-medium mb-2">请输入你的心情：</h3>
-                <input type="text" id="customMood" class="w-full p-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：惊喜、紧张...">
-                <div class="flex justify-end mt-3">
-                    <button onclick="saveCustomMood()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">确认</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 步骤2：原因 -->
-        <div id="step2" class="step hidden step-transition">
-            <h2 class="text-xl font-semibold mb-4 text-center">今天做了什么事情呀，为什么～</h2>
-            <textarea id="reason" class="w-full p-3 border border-accent rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-32" placeholder="请描述一下原因..."></textarea>
-            <div class="flex justify-between mt-4">
-                <button onclick="prevStep(2)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
-                    <i class="fa fa-arrow-left mr-1"></i> 上一步
+        <!-- 首页功能选择 -->
+        <div id="home" class="step-transition">
+            <div class="space-y-4">
+                <button onclick="goToDiaryGenerator()" class="w-full py-4 rounded-xl bg-secondary text-primary font-medium hover:bg-accent transition-colors flex items-center justify-center">
+                    <i class="fa fa-book mr-2"></i> 生成心情日记
                 </button>
-                <button onclick="nextStep(2)" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
-                    下一步 <i class="fa fa-arrow-right ml-1"></i>
+                
+                <button onclick="startComfortFlow()" class="w-full py-4 rounded-xl bg-comfort text-blue-700 font-medium hover:bg-blue-100 transition-colors flex items-center justify-center">
+                    <i class="fa fa-heart mr-2"></i> 不开心的时候点我！！
                 </button>
             </div>
         </div>
         
-        <!-- 步骤3：收获 -->
-        <div id="step3" class="step hidden step-transition">
-            <h2 class="text-xl font-semibold mb-4 text-center">今天的收获有哪些？</h2>
-            <div class="checkbox-group space-y-2 mb-6">
-                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="读书 📚" data-type="reading" class="mr-2 h-4 w-4 text-primary rounded"> 读书
-                </label>
-                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="运动 🏃‍♀️" data-type="exercise" class="mr-2 h-4 w-4 text-primary rounded"> 运动
-                </label>
-                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="学习 📖" data-type="study" class="mr-2 h-4 w-4 text-primary rounded"> 学习
-                </label>
-                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="听书 🎧" data-type="audiobook" class="mr-2 h-4 w-4 text-primary rounded"> 听书
-                </label>
-                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="反思 🪞" data-type="reflection" class="mr-2 h-4 w-4 text-primary rounded"> 反思
-                </label>
-                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="custom" data-type="custom" class="mr-2 h-4 w-4 text-primary rounded"> 其他
-                </label>
-            </div>
-            
-            <!-- 收获详情输入区域 -->
-            <div id="harvestDetail" class="hidden bg-secondary p-4 rounded-xl mb-6">
-                <h3 id="detailTitle" class="font-medium mb-2"></h3>
-                <textarea id="detailContent" class="w-full p-3 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-24" placeholder="请描述一下具体收获..."></textarea>
-                <div class="flex justify-between mt-3">
-                    <button onclick="cancelHarvestDetail()" class="px-3 py-1 rounded border border-primary text-primary text-sm hover:bg-white transition-colors">取消</button>
-                    <button onclick="saveHarvestDetail()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">保存</button>
+        <!-- 日记生成器流程 (原有功能) -->
+        <div id="diaryGenerator" class="hidden">
+            <!-- 步骤1：选择心情 -->
+            <div id="step1" class="step step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center">今天感觉怎么样？</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="selectMood('开心 😊')" class="p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">开心</button>
+                    <button onclick="selectMood('平静 😌')" class="p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">平静</button>
+                    <button onclick="selectMood('疲惫 😴')" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">疲惫</button>
+                    <button onclick="selectMood('难过 😢')" class="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">难过</button>
+                    <button onclick="selectMood('生气生气 😠')" class="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">生气</button>
+                    <button onclick="showCustomMoodInput()" class="p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">其他</button>
                 </div>
-            </div>
-            
-            <!-- 自定义收获类型输入 -->
-            <div id="customHarvestTypeInput" class="hidden bg-secondary p-4 rounded-xl mb-6">
-                <h3 class="font-medium mb-2">请输入收获类型：</h3>
-                <input type="text" id="customHarvestType" class="w-full p-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：做饭、旅行...">
-                <div class="flex justify-end mt-3">
-                    <button onclick="saveCustomHarvestType()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">确认</button>
+                
+                <!-- 自定义心情输入框 -->
+                <div id="customMoodInput" class="hidden mt-4 p-4 bg-secondary rounded-xl">
+                    <h3 class="font-medium mb-2">请输入你的心情：</h3>
+                    <input type="text" id="customMood" class="w-full p-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：惊喜、紧张...">
+                    <div class="flex justify-end mt-3">
+                        <button onclick="saveCustomMood()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">确认</button>
+                    </div>
                 </div>
-            </div>
-            
-            <!-- 已选收获展示 -->
-            <div class="mb-6">
-                <h3 class="font-medium mb-2 text-gray-700">已选收获：</h3>
-                <div id="selectedHarvests" class="min-h-[50px] p-3 border border-dashed border-accent rounded-xl flex flex-wrap gap-2"></div>
-            </div>
-            
-            <div class="flex justify-between">
-                <button onclick="prevStep(3)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
-                    <i class="fa fa-arrow-left mr-1"></i> 上一步
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
                 </button>
-                <button onclick="generateDiary()" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
-                    生成日记 <i class="fa fa-magic ml-1"></i>
+            </div>
+            
+            <!-- 步骤2：原因 -->
+            <div id="step2" class="step hidden step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center">为什么会有这种感觉呢？</h2>
+                <textarea id="reason" class="w-full p-3 border border-accent rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-32" placeholder="请描述一下原因..."></textarea>
+                <div class="flex justify-between mt-4">
+                    <button onclick="prevStep(2)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
+                        <i class="fa fa-arrow-left mr-1"></i> 上一步
+                    </button>
+                    <button onclick="nextStep(2)" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                        下一步 <i class="fa fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
+                </button>
+            </div>
+            
+            <!-- 步骤3：收获 -->
+            <div id="step3" class="step hidden step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center">今天的收获有哪些？</h2>
+                <div class="checkbox-group space-y-2 mb-6">
+                    <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                        <input type="checkbox" value="读书 📚" data-type="reading" class="mr-2 h-4 w-4 text-primary rounded"> 读书
+                    </label>
+                    <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                        <input type="checkbox" value="运动 🏃‍♀️" data-type="exercise" class="mr-2 h-4 w-4 text-primary rounded"> 运动
+                    </label>
+                    <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                        <input type="checkbox" value="学习 📖" data-type="study" class="mr-2 h-4 w-4 text-primary rounded"> 学习
+                    </label>
+                    <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                        <input type="checkbox" value="听书 🎧" data-type="audiobook" class="mr-2 h-4 w-4 text-primary rounded"> 听书
+                    </label>
+                    <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                        <input type="checkbox" value="反思 🪞" data-type="reflection" class="mr-2 h-4 w-4 text-primary rounded"> 反思
+                    </label>
+                    <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                        <input type="checkbox" value="custom" data-type="custom" class="mr-2 h-4 w-4 text-primary rounded"> 其他
+                    </label>
+                </div>
+                
+                <!-- 收获详情输入区域 -->
+                <div id="harvestDetail" class="hidden bg-secondary p-4 rounded-xl mb-6">
+                    <h3 id="detailTitle" class="font-medium mb-2"></h3>
+                    <textarea id="detailContent" class="w-full p-3 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-24" placeholder="请描述一下具体收获..."></textarea>
+                    <div class="flex justify-between mt-3">
+                        <button onclick="cancelHarvestDetail()" class="px-3 py-1 rounded border border-primary text-primary text-sm hover:bg-white transition-colors">取消</button>
+                        <button onclick="saveHarvestDetail()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">保存</button>
+                    </div>
+                </div>
+                
+                <!-- 自定义收获类型输入 -->
+                <div id="customHarvestTypeInput" class="hidden bg-secondary p-4 rounded-xl mb-6">
+                    <h3 class="font-medium mb-2">请输入收获类型：</h3>
+                    <input type="text" id="customHarvestType" class="w-full p-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：做饭、旅行...">
+                    <div class="flex justify-end mt-3">
+                        <button onclick="saveCustomHarvestType()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">确认</button>
+                    </div>
+                </div>
+                
+                <!-- 已选收获展示 -->
+                <div class="mb-6">
+                    <h3 class="font-medium mb-2 text-gray-700">已选收获：</h3>
+                    <div id="selectedHarvests" class="min-h-[50px] p-3 border border-dashed border-accent rounded-xl flex flex-wrap gap-2"></div>
+                </div>
+                
+                <div class="flex justify-between">
+                    <button onclick="prevStep(3)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
+                        <i class="fa fa-arrow-left mr-1"></i> 上一步
+                    </button>
+                    <button onclick="generateDiary()" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                        生成日记 <i class="fa fa-magic ml-1"></i>
+                    </button>
+                </div>
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
+                </button>
+            </div>
+            
+            <!-- 日记结果页 -->
+            <div id="result" class="hidden step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center">你的今日日记</h2>
+                <div id="diaryCard" class="diary-card bg-white border border-accent rounded-xl p-5 mb-4 min-h-[150px]">
+                    <p id="diaryText" class="text-gray-800 leading-relaxed"></p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="copyDiary()" id="copyBtn" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center">
+                        <i class="fa fa-copy mr-2"></i> 复制日记
+                    </button>
+                    <button onclick="restartDiary()" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
                 </button>
             </div>
         </div>
         
-        <!-- 结果页 -->
-        <div id="result" class="hidden step-transition">
-            <h2 class="text-xl font-semibold mb-4 text-center">你的今日日记</h2>
-            <div id="diaryCard" class="diary-card bg-white border border-accent rounded-xl p-5 mb-4 min-h-[150px]">
-                <p id="diaryText" class="text-gray-800 leading-relaxed"></p>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="copyDiary()" id="copyBtn" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center">
-                    <i class="fa fa-copy mr-2"></i> 复制日记
+        <!-- 不开心疏导流程 (新功能) -->
+        <div id="comfortFlow" class="hidden">
+            <!-- 步骤1：询问不开心的原因 -->
+            <div id="comfortStep1" class="step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">
+                    现在的心情是怎么样的呀？
+                </h2>
+                <p class="text-center text-gray-600 mb-6">为什么不开心，发生了什么呢？</p>
+                
+                <textarea id="unhappyReason" class="w-full p-3 border border-comfort rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none h-32" placeholder="把不开心的事情说出来会好一些哦..."></textarea>
+                
+                <div class="flex justify-end mt-4">
+                    <button onclick="nextComfortStep(1)" class="px-4 py-2 rounded-lg bg-comfort text-blue-700 hover:bg-blue-100 transition-colors">
+                        下一步 <i class="fa fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
                 </button>
-                <button onclick="restart()" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
-                    <i class="fa fa-refresh"></i>
+            </div>
+            
+            <!-- 步骤2：引导思考能做的事情 -->
+            <div id="comfortStep2" class="hidden step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">
+                    我们来想想办法吧 💡
+                </h2>
+                <p class="text-center text-gray-600 mb-6">
+                    我现在能(几乎不动脑子地)梳理一下我所能做的事情嘛？<br>
+                    哪怕只让我开心一点点也可以！<br>
+                    是有什么任务在害怕做吗，尝试梳理一下下！😊
+                </p>
+                
+                <textarea id="possibleActions" class="w-full p-3 border border-comfort rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none h-32" placeholder="可以写一些小事情，比如：喝一杯温水、听一首喜欢的歌..."></textarea>
+                
+                <div class="flex justify-between mt-4">
+                    <button onclick="prevComfortStep(2)" class="px-4 py-2 rounded-lg border border-comfort text-blue-700 hover:bg-blue-50 transition-colors">
+                        <i class="fa fa-arrow-left mr-1"></i> 上一步
+                    </button>
+                    <button onclick="generateComfortSummary()" class="px-4 py-2 rounded-lg bg-comfort text-blue-700 hover:bg-blue-100 transition-colors">
+                        生成总结 <i class="fa fa-check ml-1"></i>
+                    </button>
+                </div>
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
+                </button>
+            </div>
+            
+            <!-- 疏导结果页 -->
+            <div id="comfortResult" class="hidden step-transition">
+                <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">
+                    心情梳理
+                </h2>
+                <div id="comfortCard" class="comfort-card bg-white border border-comfort rounded-xl p-5 mb-4 min-h-[150px]">
+                    <p id="comfortText" class="text-gray-800 leading-relaxed"></p>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="copyComfortText()" id="comfortCopyBtn" class="flex-1 px-4 py-2 rounded-lg bg-comfort text-blue-700 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                        <i class="fa fa-copy mr-2"></i> 复制内容
+                    </button>
+                    <button onclick="restartComfort()" class="px-4 py-2 rounded-lg border border-comfort text-blue-700 hover:bg-blue-50 transition-colors">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>
+                <button onclick="backToHome()" class="mt-4 text-sm text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 返回首页
                 </button>
             </div>
         </div>
     </div>
 
     <script>
+        // 日记生成器相关变量
         let mood = "";
-        let harvests = []; // 存储收获及其详情
+        let harvests = [];
         let currentHarvestType = null;
         let customHarvestValue = "";
+        
+        // 不开心疏导相关变量
+        let unhappyReason = "";
+        let possibleActions = "";
 
-        // 选择心情
+        // 首页导航
+        function goToDiaryGenerator() {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('diaryGenerator').classList.remove('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+        
+        function startComfortFlow() {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('comfortFlow').classList.remove('hidden');
+            document.getElementById('comfortStep1').classList.remove('hidden');
+        }
+        
+        function backToHome() {
+            // 隐藏所有步骤
+            document.getElementById('diaryGenerator').classList.add('hidden');
+            document.getElementById('comfortFlow').classList.add('hidden');
+            document.querySelectorAll('.step').forEach(el => el.classList.add('hidden'));
+            document.getElementById('comfortStep1').classList.add('hidden');
+            document.getElementById('comfortStep2').classList.add('hidden');
+            document.getElementById('comfortResult').classList.add('hidden');
+            
+            // 重置状态
+            resetAllStates();
+            
+            // 显示首页
+            document.getElementById('home').classList.remove('hidden');
+        }
+        
+        function resetAllStates() {
+            // 重置日记生成器状态
+            mood = "";
+            harvests = [];
+            currentHarvestType = null;
+            customHarvestValue = "";
+            document.getElementById("reason").value = "";
+            document.getElementById("selectedHarvests").innerHTML = "";
+            document.getElementById("customMoodInput").classList.add('hidden');
+            document.getElementById("customMood").value = "";
+            document.getElementById("customHarvestTypeInput").classList.add('hidden');
+            document.getElementById("customHarvestType").value = "";
+            
+            // 重置不开心疏导状态
+            unhappyReason = "";
+            possibleActions = "";
+            document.getElementById("unhappyReason").value = "";
+            document.getElementById("possibleActions").value = "";
+        }
+
+        // 日记生成器功能
         function selectMood(selectedMood) {
             mood = selectedMood;
             nextStep(1);
         }
 
-        // 显示自定义心情输入
         function showCustomMoodInput() {
             document.getElementById('customMoodInput').classList.remove('hidden');
         }
 
-        // 保存自定义心情
         function saveCustomMood() {
             const customMood = document.getElementById('customMood').value.trim();
             if (customMood) {
-                mood = `${customMood} 😊`; // 默认添加一个表情
+                mood = `${customMood} 😊`;
                 document.getElementById('customMoodInput').classList.add('hidden');
                 document.getElementById('customMood').value = "";
                 nextStep(1);
             }
         }
 
-        // 步骤导航
         function nextStep(step) {
             document.getElementById(`step${step}`).classList.add('hidden');
             document.getElementById(`step${step + 1}`).classList.remove('hidden');
@@ -191,17 +344,15 @@
             document.getElementById(`step${step - 1}`).classList.remove('hidden');
         }
 
-        // 监听复选框变化
+        // 收获选择相关
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 if (this.checked) {
-                    // 如果是"其他"选项，先让用户输入收获类型
                     if (this.value === "custom") {
                         currentHarvestType = this;
                         document.getElementById('customHarvestTypeInput').classList.remove('hidden');
                         this.checked = false;
                     } else {
-                        // 普通收获类型，直接显示详情输入
                         currentHarvestType = this;
                         document.getElementById('detailTitle').textContent = `请描述你的${this.value.split(' ')[0]}收获：`;
                         document.getElementById('detailContent').value = '';
@@ -212,50 +363,41 @@
             });
         });
 
-        // 保存自定义收获类型
         function saveCustomHarvestType() {
             const type = document.getElementById('customHarvestType').value.trim();
             if (type) {
-                customHarvestValue = `${type} 🌟`; // 添加一个星星表情标识自定义类型
+                customHarvestValue = `${type} 🌟`;
                 document.getElementById('customHarvestTypeInput').classList.add('hidden');
                 document.getElementById('customHarvestType').value = "";
-                // 显示详情输入框
                 document.getElementById('detailTitle').textContent = `请描述你的${type}收获：`;
                 document.getElementById('detailContent').value = '';
                 document.getElementById('harvestDetail').classList.remove('hidden');
             }
         }
 
-        // 保存收获详情
         function saveHarvestDetail() {
             if (currentHarvestType) {
                 const content = document.getElementById('detailContent').value.trim();
                 let value = currentHarvestType.value === "custom" ? customHarvestValue : currentHarvestType.value;
                 
-                // 保存收获及其详情
                 harvests.push({
                     type: value,
                     detail: content
                 });
                 
-                // 更新显示已选收获
                 updateSelectedHarvests();
-                
-                // 重置状态并隐藏输入框
                 document.getElementById('harvestDetail').classList.add('hidden');
                 currentHarvestType = null;
                 customHarvestValue = "";
             }
         }
 
-        // 取消收获详情输入
         function cancelHarvestDetail() {
             document.getElementById('harvestDetail').classList.add('hidden');
             currentHarvestType = null;
             customHarvestValue = "";
         }
 
-        // 更新已选收获显示
         function updateSelectedHarvests() {
             const container = document.getElementById('selectedHarvests');
             container.innerHTML = '';
@@ -271,20 +413,17 @@
             });
         }
 
-        // 移除收获
         function removeHarvest(index) {
             harvests.splice(index, 1);
             updateSelectedHarvests();
         }
 
-        // 生成日记
         function generateDiary() {
             const reason = document.getElementById("reason").value.trim();
             
             let diary = `今天我感到${mood}。`;
             if (reason) diary += `因为${reason}。`;
             
-            // 处理收获内容
             if (harvests.length > 0) {
                 diary += `今天的收获有：`;
                 harvests.forEach((harvest, index) => {
@@ -306,7 +445,6 @@
             document.getElementById("diaryText").innerText = diary;
         }
 
-        // 复制日记
         function copyDiary() {
             const diaryText = document.getElementById("diaryText").innerText;
             navigator.clipboard.writeText(diaryText).then(() => {
@@ -324,8 +462,7 @@
             });
         }
 
-        // 重置
-        function restart() {
+        function restartDiary() {
             mood = "";
             harvests = [];
             currentHarvestType = null;
@@ -334,11 +471,67 @@
             document.getElementById("selectedHarvests").innerHTML = "";
             document.getElementById("customMoodInput").classList.add('hidden');
             document.getElementById("customMood").value = "";
-            document.getElementById("customHarvestTypeInput").classList.add('hidden');
-            document.getElementById("customHarvestType").value = "";
             
             document.getElementById("result").classList.add("hidden");
             document.getElementById("step1").classList.remove("hidden");
+        }
+
+        // 不开心疏导功能
+        function nextComfortStep(step) {
+            if (step === 1) {
+                unhappyReason = document.getElementById("unhappyReason").value.trim();
+                if (unhappyReason) {
+                    document.getElementById(`comfortStep${step}`).classList.add('hidden');
+                    document.getElementById(`comfortStep${step + 1}`).classList.remove('hidden');
+                }
+            }
+        }
+        
+        function prevComfortStep(step) {
+            document.getElementById(`comfortStep${step}`).classList.add('hidden');
+            document.getElementById(`comfortStep${step - 1}`).classList.remove('hidden');
+        }
+        
+        function generateComfortSummary() {
+            possibleActions = document.getElementById("possibleActions").value.trim();
+            if (possibleActions) {
+                const summary = `现在我不开心，因为${unhappyReason}。我现在能做的改善我心情的事情是${possibleActions}～～～状态是越做越好的，抱抱，加油！`;
+                
+                document.getElementById("comfortStep2").classList.add("hidden");
+                document.getElementById("comfortResult").classList.remove("hidden");
+                document.getElementById("comfortText").innerText = summary;
+            }
+        }
+        
+        function copyComfortText() {
+            const text = document.getElementById("comfortText").innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const copyBtn = document.getElementById("comfortCopyBtn");
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fa fa-check mr-2"></i> 已复制';
+                copyBtn.classList.remove('bg-comfort');
+                copyBtn.classList.add('bg-green-500');
+                copyBtn.classList.remove('text-blue-700');
+                copyBtn.classList.add('text-white');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.classList.remove('bg-green-500');
+                    copyBtn.classList.add('bg-comfort');
+                    copyBtn.classList.remove('text-white');
+                    copyBtn.classList.add('text-blue-700');
+                }, 2000);
+            });
+        }
+        
+        function restartComfort() {
+            unhappyReason = "";
+            possibleActions = "";
+            document.getElementById("unhappyReason").value = "";
+            document.getElementById("possibleActions").value = "";
+            
+            document.getElementById("comfortResult").classList.add("hidden");
+            document.getElementById("comfortStep1").classList.remove("hidden");
         }
     </script>
 </body>
