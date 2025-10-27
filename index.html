@@ -49,13 +49,22 @@
                 <button onclick="selectMood('疲惫 😴')" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">疲惫</button>
                 <button onclick="selectMood('难过 😢')" class="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">难过</button>
                 <button onclick="selectMood('生气 😠')" class="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">生气</button>
-                <button onclick="selectMood('兴奋 🤩')" class="p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">兴奋</button>
+                <button onclick="showCustomMoodInput()" class="p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">其他</button>
+            </div>
+            
+            <!-- 自定义心情输入框 -->
+            <div id="customMoodInput" class="hidden mt-4 p-4 bg-secondary rounded-xl">
+                <h3 class="font-medium mb-2">请输入你的心情：</h3>
+                <input type="text" id="customMood" class="w-full p-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：惊喜、紧张...">
+                <div class="flex justify-end mt-3">
+                    <button onclick="saveCustomMood()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">确认</button>
+                </div>
             </div>
         </div>
         
         <!-- 步骤2：原因 -->
         <div id="step2" class="step hidden step-transition">
-            <h2 class="text-xl font-semibold mb-4 text-center">为什么会有这种感觉呢？</h2>
+            <h2 class="text-xl font-semibold mb-4 text-center">今天做了什么事情呀，为什么～</h2>
             <textarea id="reason" class="w-full p-3 border border-accent rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-32" placeholder="请描述一下原因..."></textarea>
             <div class="flex justify-between mt-4">
                 <button onclick="prevStep(2)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
@@ -78,13 +87,16 @@
                     <input type="checkbox" value="运动 🏃‍♀️" data-type="exercise" class="mr-2 h-4 w-4 text-primary rounded"> 运动
                 </label>
                 <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
-                    <input type="checkbox" value="社交 💬" data-type="social" class="mr-2 h-4 w-4 text-primary rounded"> 社交
+                    <input type="checkbox" value="学习 📖" data-type="study" class="mr-2 h-4 w-4 text-primary rounded"> 学习
                 </label>
                 <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
                     <input type="checkbox" value="听书 🎧" data-type="audiobook" class="mr-2 h-4 w-4 text-primary rounded"> 听书
                 </label>
                 <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
                     <input type="checkbox" value="反思 🪞" data-type="reflection" class="mr-2 h-4 w-4 text-primary rounded"> 反思
+                </label>
+                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                    <input type="checkbox" value="custom" data-type="custom" class="mr-2 h-4 w-4 text-primary rounded"> 其他
                 </label>
             </div>
             
@@ -95,6 +107,15 @@
                 <div class="flex justify-between mt-3">
                     <button onclick="cancelHarvestDetail()" class="px-3 py-1 rounded border border-primary text-primary text-sm hover:bg-white transition-colors">取消</button>
                     <button onclick="saveHarvestDetail()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">保存</button>
+                </div>
+            </div>
+            
+            <!-- 自定义收获类型输入 -->
+            <div id="customHarvestTypeInput" class="hidden bg-secondary p-4 rounded-xl mb-6">
+                <h3 class="font-medium mb-2">请输入收获类型：</h3>
+                <input type="text" id="customHarvestType" class="w-full p-2 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="例如：做饭、旅行...">
+                <div class="flex justify-end mt-3">
+                    <button onclick="saveCustomHarvestType()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">确认</button>
                 </div>
             </div>
             
@@ -135,11 +156,28 @@
         let mood = "";
         let harvests = []; // 存储收获及其详情
         let currentHarvestType = null;
+        let customHarvestValue = "";
 
         // 选择心情
         function selectMood(selectedMood) {
             mood = selectedMood;
             nextStep(1);
+        }
+
+        // 显示自定义心情输入
+        function showCustomMoodInput() {
+            document.getElementById('customMoodInput').classList.remove('hidden');
+        }
+
+        // 保存自定义心情
+        function saveCustomMood() {
+            const customMood = document.getElementById('customMood').value.trim();
+            if (customMood) {
+                mood = `${customMood} 😊`; // 默认添加一个表情
+                document.getElementById('customMoodInput').classList.add('hidden');
+                document.getElementById('customMood').value = "";
+                nextStep(1);
+            }
         }
 
         // 步骤导航
@@ -157,22 +195,42 @@
         document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 if (this.checked) {
-                    // 显示详情输入框
-                    currentHarvestType = this;
-                    document.getElementById('detailTitle').textContent = `请描述你的${this.value.split(' ')[0]}收获：`;
-                    document.getElementById('detailContent').value = '';
-                    document.getElementById('harvestDetail').classList.remove('hidden');
-                    // 临时取消选中，等输入详情后再确认
-                    this.checked = false;
+                    // 如果是"其他"选项，先让用户输入收获类型
+                    if (this.value === "custom") {
+                        currentHarvestType = this;
+                        document.getElementById('customHarvestTypeInput').classList.remove('hidden');
+                        this.checked = false;
+                    } else {
+                        // 普通收获类型，直接显示详情输入
+                        currentHarvestType = this;
+                        document.getElementById('detailTitle').textContent = `请描述你的${this.value.split(' ')[0]}收获：`;
+                        document.getElementById('detailContent').value = '';
+                        document.getElementById('harvestDetail').classList.remove('hidden');
+                        this.checked = false;
+                    }
                 }
             });
         });
+
+        // 保存自定义收获类型
+        function saveCustomHarvestType() {
+            const type = document.getElementById('customHarvestType').value.trim();
+            if (type) {
+                customHarvestValue = `${type} 🌟`; // 添加一个星星表情标识自定义类型
+                document.getElementById('customHarvestTypeInput').classList.add('hidden');
+                document.getElementById('customHarvestType').value = "";
+                // 显示详情输入框
+                document.getElementById('detailTitle').textContent = `请描述你的${type}收获：`;
+                document.getElementById('detailContent').value = '';
+                document.getElementById('harvestDetail').classList.remove('hidden');
+            }
+        }
 
         // 保存收获详情
         function saveHarvestDetail() {
             if (currentHarvestType) {
                 const content = document.getElementById('detailContent').value.trim();
-                const value = currentHarvestType.value;
+                let value = currentHarvestType.value === "custom" ? customHarvestValue : currentHarvestType.value;
                 
                 // 保存收获及其详情
                 harvests.push({
@@ -183,9 +241,10 @@
                 // 更新显示已选收获
                 updateSelectedHarvests();
                 
-                // 隐藏详情输入框
+                // 重置状态并隐藏输入框
                 document.getElementById('harvestDetail').classList.add('hidden');
                 currentHarvestType = null;
+                customHarvestValue = "";
             }
         }
 
@@ -193,6 +252,7 @@
         function cancelHarvestDetail() {
             document.getElementById('harvestDetail').classList.add('hidden');
             currentHarvestType = null;
+            customHarvestValue = "";
         }
 
         // 更新已选收获显示
@@ -269,8 +329,13 @@
             mood = "";
             harvests = [];
             currentHarvestType = null;
+            customHarvestValue = "";
             document.getElementById("reason").value = "";
             document.getElementById("selectedHarvests").innerHTML = "";
+            document.getElementById("customMoodInput").classList.add('hidden');
+            document.getElementById("customMood").value = "";
+            document.getElementById("customHarvestTypeInput").classList.add('hidden');
+            document.getElementById("customHarvestType").value = "";
             
             document.getElementById("result").classList.add("hidden");
             document.getElementById("step1").classList.remove("hidden");
