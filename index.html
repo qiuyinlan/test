@@ -1,50 +1,280 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>心情日记</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心情日记生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff6b8b',
+                        secondary: '#ffeef2',
+                        accent: '#ffccd5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .step-transition {
+                transition: all 0.3s ease;
+            }
+            .diary-card {
+                box-shadow: 0 10px 25px -5px rgba(255, 107, 139, 0.1), 0 8px 10px -6px rgba(255, 107, 139, 0.1);
+            }
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>🌸 今日心情日记</h1>
-    <div id="step1" class="step">
-      <h2>今天的心情是？</h2>
-      <div class="mood-options">
-        <button onclick="selectMood('开心 😊')">😊 开心</button>
-        <button onclick="selectMood('平静 😌')">😌 平静</button>
-        <button onclick="selectMood('难过 😢')">😢 难过</button>
-        <button onclick="selectMood('焦虑 😰')">😰 焦虑</button>
-        <button onclick="selectMood('生气 😡')">😡 生气</button>
-      </div>
+<body class="bg-gradient-to-br from-pink-50 to-purple-50 min-h-screen flex items-center justify-center p-4 font-sans">
+    <div class="max-w-md w-full bg-white rounded-2xl p-6 shadow-lg">
+        <h1 class="text-2xl font-bold text-center text-primary mb-6">今日心情日记 ✨</h1>
+        
+        <!-- 步骤1：选择心情 -->
+        <div id="step1" class="step step-transition">
+            <h2 class="text-xl font-semibold mb-4 text-center">今天感觉怎么样？</h2>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="selectMood('开心 😊')" class="p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">开心</button>
+                <button onclick="selectMood('平静 😌')" class="p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">平静</button>
+                <button onclick="selectMood('疲惫 😴')" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">疲惫</button>
+                <button onclick="selectMood('难过 😢')" class="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">难过</button>
+                <button onclick="selectMood('生气 😠')" class="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">生气</button>
+                <button onclick="selectMood('兴奋 🤩')" class="p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">兴奋</button>
+            </div>
+        </div>
+        
+        <!-- 步骤2：原因 -->
+        <div id="step2" class="step hidden step-transition">
+            <h2 class="text-xl font-semibold mb-4 text-center">为什么会有这种感觉呢？</h2>
+            <textarea id="reason" class="w-full p-3 border border-accent rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-32" placeholder="请描述一下原因..."></textarea>
+            <div class="flex justify-between mt-4">
+                <button onclick="prevStep(2)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 上一步
+                </button>
+                <button onclick="nextStep(2)" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                    下一步 <i class="fa fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 步骤3：收获 -->
+        <div id="step3" class="step hidden step-transition">
+            <h2 class="text-xl font-semibold mb-4 text-center">今天的收获有哪些？</h2>
+            <div class="checkbox-group space-y-2 mb-6">
+                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                    <input type="checkbox" value="读书 📚" data-type="reading" class="mr-2 h-4 w-4 text-primary rounded"> 读书
+                </label>
+                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                    <input type="checkbox" value="运动 🏃‍♀️" data-type="exercise" class="mr-2 h-4 w-4 text-primary rounded"> 运动
+                </label>
+                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                    <input type="checkbox" value="社交 💬" data-type="social" class="mr-2 h-4 w-4 text-primary rounded"> 社交
+                </label>
+                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                    <input type="checkbox" value="听书 🎧" data-type="audiobook" class="mr-2 h-4 w-4 text-primary rounded"> 听书
+                </label>
+                <label class="flex items-center p-2 rounded-lg hover:bg-secondary cursor-pointer">
+                    <input type="checkbox" value="反思 🪞" data-type="reflection" class="mr-2 h-4 w-4 text-primary rounded"> 反思
+                </label>
+            </div>
+            
+            <!-- 收获详情输入区域 -->
+            <div id="harvestDetail" class="hidden bg-secondary p-4 rounded-xl mb-6">
+                <h3 id="detailTitle" class="font-medium mb-2"></h3>
+                <textarea id="detailContent" class="w-full p-3 border border-accent rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-24" placeholder="请描述一下具体收获..."></textarea>
+                <div class="flex justify-between mt-3">
+                    <button onclick="cancelHarvestDetail()" class="px-3 py-1 rounded border border-primary text-primary text-sm hover:bg-white transition-colors">取消</button>
+                    <button onclick="saveHarvestDetail()" class="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary/90 transition-colors">保存</button>
+                </div>
+            </div>
+            
+            <!-- 已选收获展示 -->
+            <div class="mb-6">
+                <h3 class="font-medium mb-2 text-gray-700">已选收获：</h3>
+                <div id="selectedHarvests" class="min-h-[50px] p-3 border border-dashed border-accent rounded-xl flex flex-wrap gap-2"></div>
+            </div>
+            
+            <div class="flex justify-between">
+                <button onclick="prevStep(3)" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
+                    <i class="fa fa-arrow-left mr-1"></i> 上一步
+                </button>
+                <button onclick="generateDiary()" class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+                    生成日记 <i class="fa fa-magic ml-1"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 结果页 -->
+        <div id="result" class="hidden step-transition">
+            <h2 class="text-xl font-semibold mb-4 text-center">你的今日日记</h2>
+            <div id="diaryCard" class="diary-card bg-white border border-accent rounded-xl p-5 mb-4 min-h-[150px]">
+                <p id="diaryText" class="text-gray-800 leading-relaxed"></p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="copyDiary()" id="copyBtn" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center">
+                    <i class="fa fa-copy mr-2"></i> 复制日记
+                </button>
+                <button onclick="restart()" class="px-4 py-2 rounded-lg border border-primary text-primary hover:bg-secondary transition-colors">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div id="step2" class="step hidden">
-      <h2>为什么会这样呢？</h2>
-      <textarea id="reason" placeholder="简单写一下原因吧..."></textarea>
-      <button onclick="nextStep()">下一步 ➜</button>
-    </div>
+    <script>
+        let mood = "";
+        let harvests = []; // 存储收获及其详情
+        let currentHarvestType = null;
 
-    <div id="step3" class="step hidden">
-      <h2>今天的收获有哪些？</h2>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="读书 📚"> 读书</label>
-        <label><input type="checkbox" value="运动 🏃‍♀️"> 运动</label>
-        <label><input type="checkbox" value="社交 💬"> 社交</label>
-        <label><input type="checkbox" value="听书 🎧"> 听书</label>
-        <label><input type="checkbox" value="反思 🪞"> 反思</label>
-      </div>
-      <button onclick="generateDiary()">生成日记 💖</button>
-    </div>
+        // 选择心情
+        function selectMood(selectedMood) {
+            mood = selectedMood;
+            nextStep(1);
+        }
 
-    <div id="result" class="step hidden">
-      <h2>你的今日日记 ✨</h2>
-      <p id="diaryText"></p>
-      <button onclick="restart()">再写一篇 🌷</button>
-    </div>
-  </div>
+        // 步骤导航
+        function nextStep(step) {
+            document.getElementById(`step${step}`).classList.add('hidden');
+            document.getElementById(`step${step + 1}`).classList.remove('hidden');
+        }
 
-  <script src="script.js"></script>
+        function prevStep(step) {
+            document.getElementById(`step${step}`).classList.add('hidden');
+            document.getElementById(`step${step - 1}`).classList.remove('hidden');
+        }
+
+        // 监听复选框变化
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // 显示详情输入框
+                    currentHarvestType = this;
+                    document.getElementById('detailTitle').textContent = `请描述你的${this.value.split(' ')[0]}收获：`;
+                    document.getElementById('detailContent').value = '';
+                    document.getElementById('harvestDetail').classList.remove('hidden');
+                    // 临时取消选中，等输入详情后再确认
+                    this.checked = false;
+                }
+            });
+        });
+
+        // 保存收获详情
+        function saveHarvestDetail() {
+            if (currentHarvestType) {
+                const content = document.getElementById('detailContent').value.trim();
+                const value = currentHarvestType.value;
+                
+                // 保存收获及其详情
+                harvests.push({
+                    type: value,
+                    detail: content
+                });
+                
+                // 更新显示已选收获
+                updateSelectedHarvests();
+                
+                // 隐藏详情输入框
+                document.getElementById('harvestDetail').classList.add('hidden');
+                currentHarvestType = null;
+            }
+        }
+
+        // 取消收获详情输入
+        function cancelHarvestDetail() {
+            document.getElementById('harvestDetail').classList.add('hidden');
+            currentHarvestType = null;
+        }
+
+        // 更新已选收获显示
+        function updateSelectedHarvests() {
+            const container = document.getElementById('selectedHarvests');
+            container.innerHTML = '';
+            
+            harvests.forEach((harvest, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'bg-secondary px-3 py-1 rounded-full text-sm flex items-center';
+                tag.innerHTML = `${harvest.type}${harvest.detail ? `: ${harvest.detail.substring(0, 10)}${harvest.detail.length > 10 ? '...' : ''}` : ''} 
+                    <span class="ml-2 text-primary cursor-pointer hover:text-primary/70" onclick="removeHarvest(${index})">
+                        <i class="fa fa-times-circle"></i>
+                    </span>`;
+                container.appendChild(tag);
+            });
+        }
+
+        // 移除收获
+        function removeHarvest(index) {
+            harvests.splice(index, 1);
+            updateSelectedHarvests();
+        }
+
+        // 生成日记
+        function generateDiary() {
+            const reason = document.getElementById("reason").value.trim();
+            
+            let diary = `今天我感到${mood}。`;
+            if (reason) diary += `因为${reason}。`;
+            
+            // 处理收获内容
+            if (harvests.length > 0) {
+                diary += `今天的收获有：`;
+                harvests.forEach((harvest, index) => {
+                    diary += `${harvest.type}`;
+                    if (harvest.detail) {
+                        diary += `，${harvest.detail}`;
+                    }
+                    if (index < harvests.length - 1) {
+                        diary += "、";
+                    }
+                });
+                diary += "。";
+            }
+            
+            diary += "希望明天也能有新的小惊喜～ 🌷";
+
+            document.getElementById("step3").classList.add("hidden");
+            document.getElementById("result").classList.remove("hidden");
+            document.getElementById("diaryText").innerText = diary;
+        }
+
+        // 复制日记
+        function copyDiary() {
+            const diaryText = document.getElementById("diaryText").innerText;
+            navigator.clipboard.writeText(diaryText).then(() => {
+                const copyBtn = document.getElementById("copyBtn");
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fa fa-check mr-2"></i> 已复制';
+                copyBtn.classList.remove('bg-primary');
+                copyBtn.classList.add('bg-green-500');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.classList.remove('bg-green-500');
+                    copyBtn.classList.add('bg-primary');
+                }, 2000);
+            });
+        }
+
+        // 重置
+        function restart() {
+            mood = "";
+            harvests = [];
+            currentHarvestType = null;
+            document.getElementById("reason").value = "";
+            document.getElementById("selectedHarvests").innerHTML = "";
+            
+            document.getElementById("result").classList.add("hidden");
+            document.getElementById("step1").classList.remove("hidden");
+        }
+    </script>
 </body>
 </html>

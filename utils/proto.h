@@ -15,7 +15,7 @@ const std::string BLUE = "\033[34m";
 //enter c
 void enter_c() {
     std::cout << YELLOW << "按下回车到下一步吧！" << RESET << std::endl;
-    std::cin.ignore();
-    std::cin.get();
+    string temp;
+    std::getline(std::cin, temp);
 }
 #endif
