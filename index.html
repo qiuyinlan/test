@@ -65,9 +65,9 @@
                 <div class="grid grid-cols-3 gap-3">
                     <button onclick="selectMood('开心 😊')" class="p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">开心</button>
                     <button onclick="selectMood('平静 😌')" class="p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">平静</button>
-                    <button onclick="selectMood('疲惫 😴')" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">疲惫</button>
+                    <button onclick="selectMood('烦躁 😴')" class="p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">烦躁</button>
                     <button onclick="selectMood('难过 😢')" class="p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">难过</button>
-                    <button onclick="selectMood('生气生气 😠')" class="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">生气</button>
+                    <button onclick="selectMood('生气 😠')" class="p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors">生气</button>
                     <button onclick="showCustomMoodInput()" class="p-3 rounded-xl bg-yellow-50 hover:bg-yellow-100 transition-colors">其他</button>
                 </div>
                 
@@ -421,11 +421,11 @@
         function generateDiary() {
             const reason = document.getElementById("reason").value.trim();
             
-            let diary = `今天我感到${mood}。`;
+            let diary = `现在我感到${mood}。`;
             if (reason) diary += `因为${reason}。`;
             
             if (harvests.length > 0) {
-                diary += `今天的收获有：`;
+                diary += `今天收获有：`;
                 harvests.forEach((harvest, index) => {
                     diary += `${harvest.type}`;
                     if (harvest.detail) {
@@ -438,7 +438,7 @@
                 diary += "。";
             }
             
-            diary += "希望明天也能有新的小惊喜～ 🌷";
+            diary += "🌷🌷🌷";
 
             document.getElementById("step3").classList.add("hidden");
             document.getElementById("result").classList.remove("hidden");
