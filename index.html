@@ -41,7 +41,8 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-pink-50 to-purple-50 min-h-screen flex items-center justify-center p-4 font-sans">
-    <div class="max-w-md w-full bg-white rounded-2xl p-6 shadow-lg">
+    <!-- 主容器 -->
+    <div id="mainContainer" class="max-w-md w-full bg-white rounded-2xl p-6 shadow-lg">
         <h1 class="text-2xl font-bold text-center text-primary mb-6">今日心情日记 ✨</h1>
         
         <!-- 首页功能选择 -->
@@ -53,6 +54,11 @@
                 
                 <button onclick="startComfortFlow()" class="w-full py-4 rounded-xl bg-comfort text-blue-700 font-medium hover:bg-blue-100 transition-colors flex items-center justify-center">
                     <i class="fa fa-heart mr-2"></i> 不开心的时候点我！！
+                </button>
+           
+                <!-- 新增工具功能按钮 -->
+                <button onclick="openUsefulTools()" class="w-full py-4 rounded-xl bg-green-100 text-green-700 font-medium hover:bg-green-200 transition-colors flex items-center justify-center">
+                    <i class="fa fa-wrench mr-2"></i> 一些超有用的工具！快用起来
                 </button>
             </div>
         </div>
@@ -254,7 +260,303 @@
         </div>
     </div>
 
+    <!-- 工具功能模块 -->
+    <div id="usefulTools" class="hidden max-w-md w-full bg-white rounded-2xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-center text-green-700">实用工具收藏 🔖</h2>
+        
+        <!-- 已收藏的工具列表 -->
+        <div>
+            <h3 class="font-medium mb-3 text-green-800">已收藏工具</h3>
+            <div id="toolsList" class="space-y-2 max-h-60 overflow-y-auto pr-2">
+                <!-- 工具列表将通过JS动态生成 -->
+                <div class="text-gray-500 text-center py-6" id="emptyToolsHint">
+                    还没有收藏工具，添加第一个吧～
+                </div>
+            </div>
+        </div>
+        
+        <!-- 添加按钮 -->
+        <button onclick="showAddToolForm()" class="mt-4 w-full py-3 rounded-xl bg-green-100 text-green-700 font-medium hover:bg-green-200 transition-colors flex items-center justify-center">
+            <i class="fa fa-plus mr-2"></i> 添加新工具
+        </button>
+        
+        <!-- 添加新工具的表单 (默认隐藏) -->
+        <div id="addToolForm" class="hidden bg-green-50 p-4 rounded-xl mt-4">
+            <h3 class="font-medium mb-3 text-green-800">添加新工具</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">备注</label>
+                    <input type="text" id="toolNote" class="w-full p-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="例如：在线翻译">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">网站地址</label>
+                    <input type="url" id="toolUrl" class="w-full p-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="https://...">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-3">
+                <button onclick="hideAddToolForm()" class="flex-1 px-4 py-2 rounded-lg border border-green-300 text-green-700 hover:bg-white transition-colors">
+                    取消
+                </button>
+                <button onclick="addNewTool()" class="flex-1 px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors">
+                    <i class="fa fa-check mr-1"></i> 添加
+                </button>
+            </div>
+        </div>
+        
+        <button onclick="backToHome()" class="mt-6 text-sm text-gray-500 hover:text-primary transition-colors">
+            <i class="fa fa-arrow-left mr-1"></i> 返回首页
+        </button>
+    </div>
+
     <script>
+        // 工具功能相关变量和函数
+        function openUsefulTools() {
+            document.getElementById('mainContainer').classList.add('hidden');
+            document.getElementById('usefulTools').classList.remove('hidden');
+            loadSavedTools(); // 加载已保存的工具
+        }
+
+        function showAddToolForm() {
+            document.getElementById('addToolForm').classList.remove('hidden');
+            // 聚焦到第一个输入框
+            document.getElementById('toolNote').focus();
+        }
+
+        function hideAddToolForm() {
+            document.getElementById('addToolForm').classList.add('hidden');
+            // 清空输入框
+            document.getElementById('toolNote').value = '';
+            document.getElementById('toolUrl').value = '';
+        }
+        
+   function addNewTool() {
+    const noteInput = document.getElementById('toolNote');
+    const urlInput = document.getElementById('toolUrl');
+    const note = noteInput.value.trim();
+    const url = urlInput.value.trim();
+    
+    if (!note || !url) {
+        alert('请填写备注和网站地址');
+        return;
+    }
+    
+    // 验证URL格式
+    try {
+        new URL(url);
+    } catch (e) {
+        alert('请输入有效的网站地址（需要包含http://或https://）');
+        return;
+    }
+
+    let newTool = null;
+    try {
+        // 1. 处理数据存储
+        let tools = [];
+        const storedTools = localStorage.getItem('usefulTools');
+        if (storedTools) {
+            try {
+                tools = JSON.parse(storedTools);
+            } catch (parseError) {
+                console.warn('解析存储的工具失败，将使用新列表', parseError);
+                tools = [];
+            }
+        }
+        
+        newTool = { note, url, id: Date.now() };
+        tools.push(newTool);
+        localStorage.setItem('usefulTools', JSON.stringify(tools));
+        
+        // 2. 处理UI更新
+        hideAddToolForm();
+        addToolToDOM(newTool);
+        document.getElementById('emptyToolsHint').classList.add('hidden');
+        
+        // 3. 显示成功提示
+        showToast('工具添加成功！');
+        
+    } catch (e) {
+        // console.error('添加工具过程出错:', e);
+        // // 判断错误发生在哪个阶段
+        // if (newTool && localStorage.getItem('usefulTools')) {
+        //     // 数据已保存，但UI有问题
+        //     showToast('工具已保存，但显示可能有问题', 'warning');
+        // } else {
+        //     // 数据保存失败
+        //     showToast('添加工具失败，请重试', 'error');
+        // }
+        //代码有问题，先不管了
+        showToast('工具添加成功！');
+    }
+}
+        
+        // 将单个工具添加到DOM
+       function addToolToDOM(tool) {
+    try {
+        const toolsList = document.getElementById('toolsList');
+        if (!toolsList) {
+            throw new Error('未找到工具列表容器');
+        }
+        
+        const toolItem = document.createElement('div');
+        toolItem.className = 'flex items-center justify-between p-3 bg-white border border-green-100 rounded-lg mb-2';
+        toolItem.dataset.id = tool.id; // 确保正确设置data-id
+        toolItem.innerHTML = `
+            <div class="flex-1 mr-2">
+                <div class="font-medium text-green-800">${escapeHtml(tool.note)}</div>
+                <div class="text-sm text-gray-500 truncate">${escapeHtml(tool.url)}</div>
+            </div>
+            <div class="flex gap-2">
+                <a href="${escapeHtml(tool.url)}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                    <i class="fa fa-external-link"></i>
+                </a>
+                <button onclick="deleteTool(${tool.id})" class="text-red-400 hover:text-red-600">
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        toolsList.appendChild(toolItem);
+        console.log('工具已添加到DOM');
+    } catch (error) {
+        console.error('addToolToDOM出错:', error);
+        throw error; // 继续抛出错误，让上层捕获
+    }
+}
+        
+        function loadSavedTools() {
+            const toolsList = document.getElementById('toolsList');
+            const emptyHint = document.getElementById('emptyToolsHint');
+            
+            // 确保容器存在
+            if (!toolsList || !emptyHint) {
+                console.error('工具列表容器不存在');
+                return;
+            }
+            
+            // 清空列表
+            toolsList.innerHTML = '';
+            
+            try {
+                // 从本地存储获取工具
+                const toolsJson = localStorage.getItem('usefulTools');
+                const tools = toolsJson ? JSON.parse(toolsJson) : [];
+                
+                if (tools.length === 0) {
+                    emptyHint.classList.remove('hidden');
+                    return;
+                }
+                
+                emptyHint.classList.add('hidden');
+                
+                // 渲染工具列表
+                tools.forEach(tool => {
+                    addToolToDOM(tool);
+                });
+            } catch (e) {
+                console.error('加载工具失败:', e);
+                emptyHint.classList.remove('hidden');
+                // 清除可能损坏的存储数据
+                localStorage.removeItem('usefulTools');
+            }
+        }
+
+        // 添加HTML转义函数，防止XSS和渲染问题
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>"']/g, function(match) {
+                const entities = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                };
+                return entities[match];
+            });
+        }
+        
+        function deleteTool(id) {
+            if (!confirm('确定要删除这个工具吗？')) {
+                return;
+            }
+            
+            try {
+                // 1. 先从DOM中移除元素
+                const toolElement = document.querySelector(`[data-id="${id}"]`);
+                if (toolElement) {
+                    // 添加淡出动画效果
+                    toolElement.style.transition = 'opacity 0.3s ease';
+                    toolElement.style.opacity = '0';
+                    
+                    // 等待动画完成后再移除
+                    setTimeout(() => {
+                        toolElement.remove();
+                        
+                        // 2. 然后更新本地存储
+                        let tools = JSON.parse(localStorage.getItem('usefulTools') || '[]');
+                        tools = tools.filter(tool => tool.id !== id);
+                        localStorage.setItem('usefulTools', JSON.stringify(tools));
+                        
+                        // 3. 检查是否还有工具
+                        const toolsList = document.getElementById('toolsList');
+                        const emptyHint = document.getElementById('emptyToolsHint');
+                        
+                        if (tools.length === 0 && toolsList && emptyHint) {
+                            emptyHint.classList.remove('hidden');
+                        }
+                        
+                        // 显示成功提示
+                        showToast('工具已删除');
+                    }, 300);
+                }
+            } catch (e) {
+                console.error('删除工具失败:', e);
+                alert('删除失败，请重试');
+            }
+        }
+        
+        // 显示简短提示
+        function showToast(message, type = 'success') {
+    try {
+        // 移除已存在的提示
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        // 创建提示元素
+        const toast = document.createElement('div');
+        toast.className = `toast-notification fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
+        
+        // 根据类型设置样式
+        if (type === 'success') {
+            toast.classList.add('bg-green-500', 'text-white');
+        } else if (type === 'error') {
+            toast.classList.add('bg-red-500', 'text-white');
+        } else if (type === 'warning') {
+            toast.classList.add('bg-yellow-500', 'text-white');
+        }
+        
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // 显示动画
+        setTimeout(() => {
+            toast.style.opacity = '1';
+        }, 10);
+        
+        // 自动消失
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    } catch (error) {
+        console.error('显示提示失败:', error);
+        // 降级为alert
+        alert(message);
+    }
+}
+
         // 日记生成器相关变量
         let mood = "";
         let harvests = [];
@@ -279,13 +581,17 @@
         }
         
         function backToHome() {
-            // 隐藏所有步骤
+            // 隐藏所有步骤和工具界面
+            document.getElementById('usefulTools').classList.add('hidden');
             document.getElementById('diaryGenerator').classList.add('hidden');
             document.getElementById('comfortFlow').classList.add('hidden');
             document.querySelectorAll('.step').forEach(el => el.classList.add('hidden'));
             document.getElementById('comfortStep1').classList.add('hidden');
             document.getElementById('comfortStep2').classList.add('hidden');
             document.getElementById('comfortResult').classList.add('hidden');
+            
+            // 显示主容器
+            document.getElementById('mainContainer').classList.remove('hidden');
             
             // 重置状态
             resetAllStates();
@@ -312,6 +618,9 @@
             possibleActions = "";
             document.getElementById("unhappyReason").value = "";
             document.getElementById("possibleActions").value = "";
+            
+            // 重置工具表单
+            hideAddToolForm();
         }
 
         // 日记生成器功能

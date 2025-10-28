@@ -10,3 +10,25 @@ help yourselves!
 3. 伤心   SAD  
 4. 平静   CALM
 5. 其他   OTHER
+
+
+//问题代码：
+ // 3. 显示成功提示
+        showToast('工具添加成功！');
+        
+    } catch (e) {
+        // console.error('添加工具过程出错:', e);
+        // // 判断错误发生在哪个阶段
+        // if (newTool && localStorage.getItem('usefulTools')) {
+        //     // 数据已保存，但UI有问题
+        //     showToast('工具已保存，但显示可能有问题', 'warning');
+        // } else {
+        //     // 数据保存失败
+        //     showToast('添加工具失败，请重试', 'error');
+        // }
+        //代码有问题，先不管了
+        showToast('工具添加成功！');
+    }
+}
+        
+        
