@@ -60,6 +60,10 @@
                 <button onclick="openUsefulTools()" class="w-full py-4 rounded-xl bg-green-100 text-green-700 font-medium hover:bg-green-200 transition-colors flex items-center justify-center">
                     <i class="fa fa-wrench mr-2"></i> 自己存些超有用的工具，用起来～
                 </button>
+             <!-- 新增计划功能按钮 -->
+               <button onclick="goToPlanPage()" class="w-full py-4 rounded-xl bg-yellow-50 text-yellow-700 font-medium hover:bg-yellow-100 transition-colors flex items-center justify-center">
+                     <i class="fa fa-list-alt mr-2"></i> 我的计划
+                </button>
             </div>
                 <!-- 新增常用网站导航 -->
             <div class="mt-8">
@@ -330,6 +334,11 @@
     </div>
 
     <script>
+        // 计划页面导航
+        function goToPlanPage() {
+            // 跳转到plan.html页面
+            window.location.href = 'plan.html';
+        }
         // 工具功能相关变量和函数
         function openUsefulTools() {
             document.getElementById('mainContainer').classList.add('hidden');
