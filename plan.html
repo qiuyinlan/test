@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>时间表</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .column {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .header {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #f5f5f5;
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 10px;
+        }
+        
+        .time-slot {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            height: 20px;
+            line-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .time-slot:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .plan-input, .actual-input {
+            width: 90%;
+            height: 18px;
+            padding: 2px 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* 添加过去时间段的样式 */
+        .past-time {
+            background-color: #f0f0f0 !important;
+            color: #888;
+        }
+
+        .past-time input {
+            background-color: #f0f0f0;
+            color: #888;
+        }
+
+        /* 当前时间段的样式 */
+        .current-time {
+            background-color: #e6f3ff !important;
+            border-left: 3px solid #1890ff;
+        }
+
+        /* 修改按钮容器样式 */
+        .buttons-container {
+            text-align: right;
+            margin: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px; /* 按钮之间的间距 */
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .clear-btn {
+            background-color: #ff4d4f;
+        }
+        
+        .clear-btn:hover {
+            background-color: #ff7875;
+        }
+
+        .export-btn {
+            background-color: #52c41a;
+        }
+        
+        .export-btn:hover {
+            background-color: #73d13d;
+        }
+    </style>
+</head>
+<body>
+    <!-- 修改按钮区域 -->
+    <div class="buttons-container">
+        <button class="btn export-btn" onclick="exportData()">导出数据</button>
+        <button class="btn clear-btn" onclick="clearAllData()">清除所有数据</button>
+    </div>
+
+    <div class="container">
+        <!-- 时间列 -->
+        <div class="column">
+            <div class="header">时间</div>
+            <div id="timeSlots"></div>
+        </div>
+        
+        <!-- 计划列 -->
+        <div class="column">
+            <div class="header">计划</div>
+            <div id="planSlots"></div>
+        </div>
+        
+        <!-- 实际列 -->
+        <div class="column">
+            <div class="header">实际</div>
+            <div id="actualSlots"></div>
+        </div>
+    </div>
+
+    <div class="buttons-container">
+        <button class="btn export-btn" onclick="exportData()">导出数据</button>
+        <button class="btn clear-btn" onclick="clearAllData()">清除所有数据</button>
+    </div>
+
+    <script>
+        // 保存数据到本地存储
+        function saveData(timeStr, type, value) {
+            const key = `${type}_${timeStr}`;
+            localStorage.setItem(key, value);
+        }
+
+        // 从本地存储获取数据
+        function getData(timeStr, type) {
+            const key = `${type}_${timeStr}`;
+            return localStorage.getItem(key) || '';
+        }
+
+        // 添加导出数据功能
+        function exportData() {
+            const data = {
+                exportTime: new Date().toLocaleString(),
+                entries: []
+            };
+
+            // 收集所有数据
+            for (let hour = 0; hour < 24; hour++) {
+                for (let min = 0; min < 60; min += 30) {
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+                    const nextTimeStr = min === 30 ? 
+                        `${(hour + 1).toString().padStart(2, '0')}:00` :
+                        `${hour.toString().padStart(2, '0')}:30`;
+                    const fullTimeStr = `${timeStr}-${nextTimeStr}`;
+
+                    const planData = getData(fullTimeStr, 'plan');
+                    const actualData = getData(fullTimeStr, 'actual');
+
+                    if (planData || actualData) {
+                        data.entries.push({
+                            time: fullTimeStr,
+                            plan: planData,
+                            actual: actualData
+                        });
+                    }
+                }
+            }
+
+            // 创建下载链接
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `时间表_${new Date().toLocaleDateString()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // 修改清除数据函数，添加更多提示信息
+        function clearAllData() {
+            if (confirm('确定要清除所有数据吗？\n此操作不可恢复，建议先导出数据。')) {
+                localStorage.clear();
+                document.getElementById('timeSlots').innerHTML = '';
+                document.getElementById('planSlots').innerHTML = '';
+                document.getElementById('actualSlots').innerHTML = '';
+                generateTimeSlots();
+                alert('数据已清除！');
+            }
+        }
+
+        function generateTimeSlots() {
+            const timeSlots = document.getElementById('timeSlots');
+            const planSlots = document.getElementById('planSlots');
+            const actualSlots = document.getElementById('actualSlots');
+            
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            for (let hour = 0; hour < 24; hour++) {
+                for (let min = 0; min < 60; min += 30) {
+                    const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+                    const nextTimeStr = min === 30 ? 
+                        `${(hour + 1).toString().padStart(2, '0')}:00` :
+                        `${hour.toString().padStart(2, '0')}:30`;
+                    
+                    const isPast = (hour < currentHour) || (hour === currentHour && min < currentMinute);
+                    const isCurrent = (hour === currentHour) && 
+                        (min <= currentMinute && currentMinute < min + 30);
+                    
+                    const timeClass = isPast ? 'past-time' : (isCurrent ? 'current-time' : '');
+                    const fullTimeStr = `${timeStr}-${nextTimeStr}`;
+                    
+                    // 获取保存的数据
+                    const savedPlan = getData(fullTimeStr, 'plan');
+                    const savedActual = getData(fullTimeStr, 'actual');
+                    
+                    timeSlots.innerHTML += `
+                        <div class="time-slot ${timeClass}">${fullTimeStr}</div>
+                    `;
+                    
+                    planSlots.innerHTML += `
+                        <div class="time-slot ${timeClass}">
+                            <input type="text" class="plan-input" 
+                                placeholder="输入计划" 
+                                value="${savedPlan}"
+                                onchange="saveData('${fullTimeStr}', 'plan', this.value)">
+                        </div>
+                    `;
+                    
+                    actualSlots.innerHTML += `
+                        <div class="time-slot ${timeClass}">
+                            <input type="text" class="actual-input" 
+                                placeholder="输入实际情况" 
+                                value="${savedActual}"
+                                onchange="saveData('${fullTimeStr}', 'actual', this.value)">
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        window.onload = generateTimeSlots;
+
+        // 每分钟更新时间状态（但不清除数据）
+        setInterval(() => {
+            document.getElementById('timeSlots').innerHTML = '';
+            document.getElementById('planSlots').innerHTML = '';
+            document.getElementById('actualSlots').innerHTML = '';
+            generateTimeSlots();
+        }, 60000);
+    </script>
+</body>
+</html>
