@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务闯关页</title>
+<style>
+    body {
+        font-family: "PingFang SC", "Helvetica Neue", sans-serif;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e6f7ff 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        overflow-x: hidden;
+    }
+
+    h2 {
+        color: #1890ff;
+        font-size: 28px;
+        margin-bottom: 40px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .task-container {
+        position: relative;
+        width: 100%;
+        max-width: 650px;
+        height: 360px;
+        transform: scale(1.1);
+    }
+
+    svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    /* 任务项容器 - 包含星星和任务内容 */
+    .task-item {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 160px;
+        transition: transform 0.3s ease;
+    }
+
+    .task-item:hover {
+        transform: translateY(-5px);
+    }
+
+    /* 星星样式 */
+    .mini-star {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 10px;
+        transition: transform 0.3s;
+    }
+
+    .mini-star.half {
+        transform: scale(1.1);
+    }
+
+    .mini-star.full {
+        transform: scale(1.3);
+        filter: drop-shadow(0 0 8px rgba(255,215,0,0.6));
+    }
+
+    /* 任务内容样式 */
+    .task-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .task-content input[type="text"] {
+        background: rgba(255, 255, 255, 0.85);
+        border: 1px solid #b3d4fc;
+        border-radius: 8px;
+        padding: 8px 12px;
+        width: 100%;
+        font-size: 15px;
+        margin-bottom: 10px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+    }
+
+    .task-content input[type="text"]:focus {
+        outline: none;
+        border-color: #40a9ff;
+        box-shadow: 0 0 0 3px rgba(64, 169, 255, 0.2);
+    }
+
+    .task-content input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin: 5px 0;
+        accent-color: #52c41a;
+        cursor: pointer;
+    }
+
+    .task-content small {
+        margin-top: 5px;
+        color: #595959;
+        font-size: 13px;
+        transition: color 0.3s;
+    }
+
+    .task-content small.completed {
+        color: #52c41a;
+        font-weight: 500;
+    }
+
+    /* 各任务位置 */
+    .task-item:nth-child(2) { top: 30px; left: 60px; }
+    .task-item:nth-child(3) { top: 90px; left: 220px; }
+    .task-item:nth-child(4) { top: 180px; left: 380px; }
+    .task-item:nth-child(5) { top: 260px; left: 540px; }
+
+    /* 大星星样式 */
+    .star {
+        position: absolute;
+        top: 140px;
+        right: -50px;
+        font-size: 60px;
+        color: #d9d9d9;
+        transition: color 0.5s ease, transform 0.3s ease;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .star.active {
+        color: #ffd700;
+        transform: scale(1.3);
+        text-shadow: 0 0 25px rgba(255,215,0,0.6);
+    }
+
+    /* 按钮样式 */
+    button {
+        margin-top: 30px;
+        background: #1890ff;
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.35);
+    }
+
+    button:hover {
+        background: #096dd9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(24, 144, 255, 0.45);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    /* 烟花特效 */
+    .firework {
+        position: fixed;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: explode 1s ease-out forwards;
+    }
+
+    @keyframes explode {
+        0% { transform: scale(1) translate(0,0); opacity: 1; }
+        100% { transform: scale(0.6) translate(var(--x), var(--y)); opacity: 0; }
+    }
+
+    /* 连接线样式优化 */
+    svg path {
+        stroke: #7cb305;
+        stroke-width: 3;
+        stroke-dasharray: 5,5;
+        animation: dash 30s linear infinite;
+    }
+
+    @keyframes dash {
+        to {
+            stroke-dashoffset: 1000;
+        }
+    }
+</style>
+</head>
+<body>
+    <h2>🌿 我的闯关任务</h2>
+
+    <div class="task-container">
+        <svg>
+            <path d="M100,50 Q220,130 380,230 Q480,280 580,200" fill="none"/>
+        </svg>
+
+        <!-- 四个任务 -->
+        <div class="task-item">
+            <!-- 星星使用SVG实现，预定义渐变 -->
+            <svg class="mini-star" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="halfGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="50%" stop-color="#faad14" />
+                        <stop offset="50%" stop-color="#d9d9d9" />
+                    </linearGradient>
+                </defs>
+                <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
+            </svg>
+            <div class="task-content">
+                <input type="text" placeholder="填写任务 1">
+                <input type="checkbox">
+                <small>未完成</small>
+            </div>
+        </div>
+        <div class="task-item">
+            <svg class="mini-star" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="halfGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="50%" stop-color="#faad14" />
+                        <stop offset="50%" stop-color="#d9d9d9" />
+                    </linearGradient>
+                </defs>
+                <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
+            </svg>
+            <div class="task-content">
+                <input type="text" placeholder="填写任务 2">
+                <input type="checkbox">
+                <small>未完成</small>
+            </div>
+        </div>
+        <div class="task-item">
+            <svg class="mini-star" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="halfGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="50%" stop-color="#faad14" />
+                        <stop offset="50%" stop-color="#d9d9d9" />
+                    </linearGradient>
+                </defs>
+                <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
+            </svg>
+            <div class="task-content">
+                <input type="text" placeholder="填写任务 3">
+                <input type="checkbox">
+                <small>未完成</small>
+            </div>
+        </div>
+        <div class="task-item">
+            <svg class="mini-star" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="halfGradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="50%" stop-color="#faad14" />
+                        <stop offset="50%" stop-color="#d9d9d9" />
+                    </linearGradient>
+                </defs>
+                <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
+            </svg>
+            <div class="task-content">
+                <input type="text" placeholder="填写任务 4">
+                <input type="checkbox">
+                <small>未完成</small>
+            </div>
+        </div>
+
+        <div class="star" id="big-star">★</div>
+    </div>
+
+    <button id="reset">🔄 刷新任务</button>
+
+<script>
+const taskItems = document.querySelectorAll('.task-item');
+const bigStar = document.getElementById('big-star');
+const reset = document.getElementById('reset');
+
+// 烟花颜色集合
+const colors = ['#ff4d4f', '#faad14', '#40a9ff', '#52c41a', '#722ed1', '#eb2f96', '#13c2c2'];
+
+// 创建烟花特效
+function createFirework(x, y, color, count = 16, size = 8) {
+    for (let i = 0; i < count; i++) {
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+        firework.style.background = color;
+        firework.style.width = firework.style.height = size + 'px';
+        firework.style.left = x + 'px';
+        firework.style.top = y + 'px';
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = Math.random() * 120 + 50;
+        firework.style.setProperty('--x', `${Math.cos(angle)*distance}px`);
+        firework.style.setProperty('--y', `${Math.sin(angle)*distance}px`);
+        document.body.appendChild(firework);
+        setTimeout(() => firework.remove(), 1000);
+    }
+}
+
+// 更新星星状态的函数
+function updateStarState(starElement, state) {
+    const path = starElement.querySelector('path');
+    const gradientId = starElement.querySelector('linearGradient')?.id;
+    
+    // 移除所有状态类
+    starElement.classList.remove('half', 'full');
+    
+    // 根据状态设置星星样式
+    if (state === 'half' && gradientId) {
+        // 半黄半白的星星 - 使用预定义的渐变
+        path.setAttribute("fill", `url(#${gradientId})`);
+        starElement.classList.add('half');
+    } else if (state === 'full') {
+        // 全黄的星星
+        path.setAttribute("fill", "#ffd700");
+        starElement.classList.add('full');
+    } else {
+        // 未亮的星星（默认状态）
+        path.setAttribute("fill", "#d9d9d9");
+    }
+}
+
+// 初始化任务事件
+taskItems.forEach((item, index) => {
+    const miniStar = item.querySelector('.mini-star');
+    const text = item.querySelector('input[type="text"]');
+    const checkbox = item.querySelector('input[type="checkbox"]');
+    const label = item.querySelector('small');
+
+    // 实时检测输入变化，确保星星状态及时更新
+    text.addEventListener('input', () => {
+        updateTaskState();
+    });
+
+    text.addEventListener('blur', () => {
+        if (text.value.trim()) {
+            // 输入完成后的特效
+            const rect = text.getBoundingClientRect();
+            createFirework(rect.x + rect.width/2, rect.y + rect.height/2, '#faad14', 10, 5);
+        }
+    });
+
+    // 复选框事件
+    checkbox.addEventListener('change', () => {
+        updateTaskState();
+        
+        if (checkbox.checked) {
+            // 勾选后的烟花特效
+            const rect = checkbox.getBoundingClientRect();
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            createFirework(rect.x + 10, rect.y + 10, color, 15, 7);
+        }
+    });
+
+    // 更新任务状态
+    function updateTaskState() {
+        const hasText = text.value.trim() !== '';
+        
+        // 重置状态
+        label.classList.remove('completed');
+        label.textContent = '未完成';
+        
+        // 根据状态更新
+        if (checkbox.checked && hasText) {
+            updateStarState(miniStar, 'full');
+            label.textContent = '已完成';
+            label.classList.add('completed');
+        } else if (hasText) {
+            updateStarState(miniStar, 'half');
+            label.textContent = '待完成';
+        } else {
+            updateStarState(miniStar, 'empty');
+        }
+        
+        checkAllTasks();
+    }
+});
+
+// 检查所有任务是否完成
+function checkAllTasks() {
+    const allChecked = [...taskItems].every(item => {
+        const text = item.querySelector('input[type="text"]');
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        return text.value.trim() !== '' && checkbox.checked;
+    });
+    
+    if (allChecked) {
+        bigStar.classList.add('active');
+        const rect = bigStar.getBoundingClientRect();
+        // 所有任务完成后的特效
+        for (let i = 0; i < 6; i++) {
+            setTimeout(() => {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                createFirework(rect.x + 30, rect.y + 30, color, 25, 9);
+            }, i * 200);
+        }
+    } else {
+        bigStar.classList.remove('active');
+    }
+}
+
+// 重置按钮事件
+reset.addEventListener('click', () => {
+    taskItems.forEach(item => {
+        const text = item.querySelector('input[type="text"]');
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const miniStar = item.querySelector('.mini-star');
+        const label = item.querySelector('small');
+        
+        text.value = '';
+        checkbox.checked = false;
+        updateStarState(miniStar, 'empty');
+        label.classList.remove('completed');
+        label.textContent = '未完成';
+    });
+    bigStar.classList.remove('active');
+});
+</script>
+</body>
+</html>
