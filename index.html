@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>心情日记生成器</title>
     <!-- 网页图标 -->
-    <link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="./favicon.png" type="image/png" sizes="32x32">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -408,16 +408,16 @@
         showToast('工具添加成功！');
         
     } catch (e) {
-        // console.error('添加工具过程出错:', e);
-        // // 判断错误发生在哪个阶段
-        // if (newTool && localStorage.getItem('usefulTools')) {
-        //     // 数据已保存，但UI有问题
-        //     showToast('工具已保存，但显示可能有问题', 'warning');
-        // } else {
-        //     // 数据保存失败
-        //     showToast('添加工具失败，请重试', 'error');
-        // }
-        //代码有问题，先不管了
+        console.error('添加工具过程出错:', e);
+        // 判断错误发生在哪个阶段
+        if (newTool && localStorage.getItem('usefulTools')) {
+            // 数据已保存，但UI有问题
+            showToast('工具已保存，但显示可能有问题', 'warning');
+        } else {
+            // 数据保存失败
+            showToast('添加工具失败，请重试', 'error');
+        }
+       // 代码有问题，先不管了
         showToast('工具添加成功！');
     }
 }
