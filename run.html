@@ -81,20 +81,29 @@
         width: 100%;
     }
 
-    .task-content input[type="text"] {
-        background: rgba(255, 255, 255, 0.85);
-        border: 1px solid #b3d4fc;
-        border-radius: 8px;
-        padding: 8px 12px;
-        width: 100%;
-        font-size: 15px;
-        margin-bottom: 10px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        transition: all 0.3s;
-    }
+    .task-content textarea {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #b3d4fc;
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: 100%;
+    font-size: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s;
+    resize: none; /* 禁止用户手动拖动 */
+    overflow: hidden; /* 隐藏滚动条 */
+    min-height: 36px; /* 初始高度 */
+}
+.task-content textarea:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 3px rgba(64, 169, 255, 0.2);
+}
 
-    .task-content input[type="text"]:focus {
+
+    .task-content textarea:focus {
         outline: none;
         border-color: #40a9ff;
         box-shadow: 0 0 0 3px rgba(64, 169, 255, 0.2);
@@ -218,7 +227,8 @@
                 <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
             </svg>
             <div class="task-content">
-                <input type="text" placeholder="填写任务 1">
+               <textarea placeholder="填写任务 1"></textarea>
+
                 <input type="checkbox">
                 <small>未完成</small>
             </div>
@@ -234,7 +244,8 @@
                 <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
             </svg>
             <div class="task-content">
-                <input type="text" placeholder="填写任务 2">
+                <textarea placeholder="填写任务 2"></textarea>
+
                 <input type="checkbox">
                 <small>未完成</small>
             </div>
@@ -250,7 +261,8 @@
                 <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
             </svg>
             <div class="task-content">
-                <input type="text" placeholder="填写任务 3">
+                <textarea placeholder="填写任务 3"></textarea>
+
                 <input type="checkbox">
                 <small>未完成</small>
             </div>
@@ -266,7 +278,8 @@
                 <path d="M50,10 L61,40 L94,40 L68,60 L79,90 L50,70 L21,90 L32,60 L6,40 L39,40 Z" fill="#d9d9d9" />
             </svg>
             <div class="task-content">
-                <input type="text" placeholder="填写任务 4">
+               <textarea placeholder="填写任务 4"></textarea>
+
                 <input type="checkbox">
                 <small>未完成</small>
             </div>
@@ -324,19 +337,28 @@ function updateStarState(starElement, state) {
         // 未亮的星星（默认状态）
         path.setAttribute("fill", "#d9d9d9");
     }
+
+    saveTasks();
+
 }
+
+
 
 // 初始化任务事件
 taskItems.forEach((item, index) => {
     const miniStar = item.querySelector('.mini-star');
-    const text = item.querySelector('input[type="text"]');
+    const text = item.querySelector('textarea');
     const checkbox = item.querySelector('input[type="checkbox"]');
     const label = item.querySelector('small');
 
     // 实时检测输入变化，确保星星状态及时更新
-    text.addEventListener('input', () => {
-        updateTaskState();
-    });
+  text.addEventListener('input', () => {
+    // 自动调整高度：先清空再自适应
+    text.style.height = 'auto';
+    text.style.height = text.scrollHeight + 'px';
+    updateTaskState();
+});
+
 
     text.addEventListener('blur', () => {
         if (text.value.trim()) {
@@ -385,7 +407,7 @@ taskItems.forEach((item, index) => {
 // 检查所有任务是否完成
 function checkAllTasks() {
     const allChecked = [...taskItems].every(item => {
-        const text = item.querySelector('input[type="text"]');
+        const text = item.querySelector('textarea');
         const checkbox = item.querySelector('input[type="checkbox"]');
         return text.value.trim() !== '' && checkbox.checked;
     });
@@ -404,11 +426,52 @@ function checkAllTasks() {
         bigStar.classList.remove('active');
     }
 }
+// === 从 localStorage 加载保存的任务数据 ===
+function loadTasks() {
+    const saved = JSON.parse(localStorage.getItem('tasksData') || '[]');
+    taskItems.forEach((item, index) => {
+        const text = item.querySelector('textarea');
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const label = item.querySelector('small');
+        const star = item.querySelector('.mini-star');
+        
+        if (saved[index]) {
+            text.value = saved[index].text || '';
+            text.style.height = 'auto';
+            text.style.height = text.scrollHeight + 'px';
+
+            checkbox.checked = saved[index].checked || false;
+            // 更新星星状态和文字状态
+            if (checkbox.checked && text.value.trim()) {
+                label.textContent = '已完成';
+                label.classList.add('completed');
+                updateStarState(star, 'full');
+            } else if (text.value.trim()) {
+                label.textContent = '待完成';
+                updateStarState(star, 'half');
+            } else {
+                label.textContent = '未完成';
+                updateStarState(star, 'empty');
+            }
+        }
+    });
+    checkAllTasks();
+}
+// === 保存任务到 localStorage ===
+function saveTasks() {
+    const data = [...taskItems].map(item => {
+        const text = item.querySelector('textarea').value;
+        const checked = item.querySelector('input[type="checkbox"]').checked;
+        return { text, checked };
+    });
+    localStorage.setItem('tasksData', JSON.stringify(data));
+}
+
 
 // 重置按钮事件
 reset.addEventListener('click', () => {
     taskItems.forEach(item => {
-        const text = item.querySelector('input[type="text"]');
+        const text = item.querySelector('textarea');
         const checkbox = item.querySelector('input[type="checkbox"]');
         const miniStar = item.querySelector('.mini-star');
         const label = item.querySelector('small');
@@ -421,6 +484,9 @@ reset.addEventListener('click', () => {
     });
     bigStar.classList.remove('active');
 });
+// 页面加载时恢复任务
+window.addEventListener('load', loadTasks);
+
 </script>
 </body>
 </html>
