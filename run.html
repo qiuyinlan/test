@@ -485,7 +485,19 @@ reset.addEventListener('click', () => {
     bigStar.classList.remove('active');
 });
 // 页面加载时恢复任务
-window.addEventListener('load', loadTasks);
+// 页面加载完成后，等待DOM渲染再调整textarea高度
+window.addEventListener('load', () => {
+    // 先加载任务
+    loadTasks();
+    // 再在下一帧执行高度调整
+    requestAnimationFrame(() => {
+        document.querySelectorAll('textarea').forEach(text => {
+            text.style.height = 'auto';
+            text.style.height = text.scrollHeight + 'px';
+        });
+    });
+});
+
 
 </script>
 </body>
