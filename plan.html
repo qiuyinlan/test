@@ -45,7 +45,7 @@
             background-color: #f9f9f9;
         }
         
-        .plan-input, .actual-input {
+        .plan-input, .actual-input, .review-input {
             width: 90%;
             height: 18px;
             padding: 2px 5px;
@@ -131,6 +131,12 @@
             <div class="header">实际</div>
             <div id="actualSlots"></div>
         </div>
+
+        <!-- 复盘列 -->
+        <div class="column">
+            <div class="header">复盘</div>
+            <div id="reviewSlots"></div>
+        </div>
     </div>
 
     <div class="buttons-container">
@@ -169,12 +175,14 @@
 
                     const planData = getData(fullTimeStr, 'plan');
                     const actualData = getData(fullTimeStr, 'actual');
+                    const reviewData = getData(fullTimeStr, 'review');
 
-                    if (planData || actualData) {
+                    if (planData || actualData || reviewData) {
                         data.entries.push({
                             time: fullTimeStr,
                             plan: planData,
-                            actual: actualData
+                            actual: actualData,
+                            review: reviewData
                         });
                     }
                 }
@@ -200,6 +208,7 @@
                 document.getElementById('timeSlots').innerHTML = '';
                 document.getElementById('planSlots').innerHTML = '';
                 document.getElementById('actualSlots').innerHTML = '';
+                document.getElementById('reviewSlots').innerHTML = '';
                 generateTimeSlots();
                 alert('数据已清除！');
             }
@@ -209,6 +218,7 @@
             const timeSlots = document.getElementById('timeSlots');
             const planSlots = document.getElementById('planSlots');
             const actualSlots = document.getElementById('actualSlots');
+            const reviewSlots = document.getElementById('reviewSlots');
             
             const now = new Date();
             const currentHour = now.getHours();
@@ -231,6 +241,7 @@
                     // 获取保存的数据
                     const savedPlan = getData(fullTimeStr, 'plan');
                     const savedActual = getData(fullTimeStr, 'actual');
+                    const savedReview = getData(fullTimeStr, 'review');
                     
                     timeSlots.innerHTML += `
                         <div class="time-slot ${timeClass}">${fullTimeStr}</div>
@@ -247,10 +258,19 @@
                     
                     actualSlots.innerHTML += `
                         <div class="time-slot ${timeClass}">
-                            <input type="text" class="actual-input" 
-                                placeholder="输入实际情况" 
+                            <input type="text" class="actual-input"
+                                placeholder="输入实际情况"
                                 value="${savedActual}"
                                 onchange="saveData('${fullTimeStr}', 'actual', this.value)">
+                        </div>
+                    `;
+
+                    reviewSlots.innerHTML += `
+                        <div class="time-slot ${timeClass}">
+                            <input type="text" class="review-input"
+                                placeholder="输入复盘"
+                                value="${savedReview}"
+                                onchange="saveData('${fullTimeStr}', 'review', this.value)">
                         </div>
                     `;
                 }
@@ -264,6 +284,7 @@
             document.getElementById('timeSlots').innerHTML = '';
             document.getElementById('planSlots').innerHTML = '';
             document.getElementById('actualSlots').innerHTML = '';
+            document.getElementById('reviewSlots').innerHTML = '';
             generateTimeSlots();
         }, 60000);
     </script>
